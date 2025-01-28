@@ -44,6 +44,7 @@ dependencies:
   geolocator: ^13.0.2
   flutter_dotenv: ^5.2.1
   mapbox_maps_flutter: ^2.5.1
+  latlong2: ^0.9.1
  
 
 

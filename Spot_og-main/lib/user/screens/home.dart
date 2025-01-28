@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
 
       // Save the location data to Firestore
       try {
-        await FirebaseFirestore.instance.collection('location').add({
+        await FirebaseFirestore.instance.collection('user_reg').add({
           'lattitude': position.latitude,
           'longitude': position.longitude,
           'timestamp': FieldValue.serverTimestamp(),

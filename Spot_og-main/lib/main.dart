@@ -37,6 +37,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:spot/splash.dart';
+import 'package:spot/user/authentication/login.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
@@ -73,7 +74,7 @@ class Login extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: SplashScreen(),
+      home: LoginPage(),
     );
   }
 }
