@@ -54,7 +54,7 @@ import 'package:flutter/material.dart';
 import 'package:spot/user/map.dart';
 import 'package:spot/user/screens/home.dart';
 import 'package:spot/user/screens/user_Profile.dart';
-import 'package:spot/user/user_shop.dart';
+import 'package:spot/user/screens/user_shop.dart';
 
 class BottomNavigation extends StatefulWidget {
   const BottomNavigation({super.key});
@@ -65,12 +65,7 @@ class BottomNavigation extends StatefulWidget {
 
 class _BottomNavigationState extends State<BottomNavigation> {
   int indexNum = 0;
-  List tabWidgets = [
-    MapScreen(),
-    NearestShopsPage(),
-    HomePage(),
-    UserProfile()
-  ];
+  List tabWidgets = [MapScreen(), UserShop(), HomePage(), UserProfile()];
 
   @override
   Widget build(BuildContext context) {

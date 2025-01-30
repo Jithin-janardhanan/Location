@@ -5,7 +5,7 @@ import 'package:spot/user/authentication/Signup.dart';
 import 'package:spot/user/authentication/auth.dart';
 import 'package:spot/user/bottomnavigation/Bottom.dart';
 
-import 'package:spot/validation.dart';
+import 'package:spot/user/authentication/validation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -41,6 +41,10 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Image(
+              image: AssetImage('assets/sPOT.PNG'),
+              height: 200,
+            ),
             // Image.asset('assets/SplashScreen__1_-removebg-preview.png'),
             Text(
               'Welcome Back to spot',

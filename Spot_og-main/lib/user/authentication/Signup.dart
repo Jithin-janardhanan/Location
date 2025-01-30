@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spot/user/authentication/auth.dart';
 import 'package:spot/user/authentication/login.dart';
 import 'package:spot/user/authentication/registration.dart';
-import 'package:spot/validation.dart';
+import 'package:spot/user/authentication/validation.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
