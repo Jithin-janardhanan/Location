@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:spot/user/authentication/auth.dart';
 import 'package:spot/user/authentication/login.dart';
@@ -145,6 +146,8 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
+//  import 'package:cloud_firestore/cloud_firestore.dart';
+
   _signup() async {
     if (_formKey.currentState!.validate()) {
       if (_confirmpassword.text != _passwordcontroller.text) {
@@ -153,14 +156,23 @@ class _SignupPageState extends State<SignupPage> {
         );
         return;
       }
+
       final user = await _auth.createUserWithEmailAndPassword(
           _emailcontroller.text, _passwordcontroller.text);
 
       if (user != null) {
-        // Form is valid
+        String userId = user.uid;
+
+        // Store user role in Firestore
+        await FirebaseFirestore.instance.collection('users').doc(userId).set({
+          'email': _emailcontroller.text,
+          'role': 'user', // Change this to 'vendor' if vendor is signing up
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Signup Successful!')),
         );
+
         Navigator.push(
             context,
             MaterialPageRoute(

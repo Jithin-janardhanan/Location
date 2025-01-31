@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:spot/superadmin/navigationadmin.dart';
 
@@ -165,40 +166,56 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   _login() async {
-    // Trim input values to avoid issues with leading/trailing spaces
     String email = _emailcontroller.text.trim();
     String password = _passwordcontroller.text.trim();
 
-    // Admin credentials check
+    // Admin login check
     if (email == 'Admin@gmail.com' && password == 'Admin@1234') {
-      // Navigate to admin home
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => BottomNavigationadmin()),
       );
+      return;
     }
-    // Regular user login
-    else if (formkey.currentState!.validate()) {
+
+    if (formkey.currentState!.validate()) {
       try {
-        final user = await _auth.signInWithEmailAndPassword(
-          email,
-          password,
-        );
+        final user = await _auth.signInWithEmailAndPassword(email, password);
 
         if (user != null) {
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('LOGIN Successful!')),
-          );
+          String userId = user.uid;
 
-          // Navigate to user home
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => BottomNavigation()),
-          );
+          // Fetch user role from Firestore
+          DocumentSnapshot userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .get();
+
+          if (userDoc.exists) {
+            String role = userDoc['role'];
+
+            if (role == 'user') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('User Login Successful!')),
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => BottomNavigation()),
+              );
+            } else if (role == 'vendor') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content:
+                        Text('Access Denied: Vendor cannot login as user!')),
+              );
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('User data not found!')),
+            );
+          }
         }
       } catch (e) {
-        // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login failed: ${e.toString()}')),
         );

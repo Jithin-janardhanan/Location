@@ -11,7 +11,7 @@ class BottomNavigationadmin extends StatefulWidget {
 
 class _BottomNavigationadminState extends State<BottomNavigationadmin> {
   int indexNum = 0;
-  List tabWidgets = [Adminhome(), Adminvendor()];
+  List tabWidgets = [UserListPage(), Adminvendor()];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
