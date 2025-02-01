@@ -47,6 +47,8 @@ dependencies:
   latlong2: ^0.9.1
   url_launcher: ^6.3.1
   flutter_rating_bar: ^4.0.1
+  fl_chart: ^0.70.2
+  intl: ^0.20.2
 
 
 

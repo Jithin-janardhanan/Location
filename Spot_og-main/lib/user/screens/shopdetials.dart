@@ -1,173 +1,7 @@
-// import 'package:flutter/material.dart';
-// import 'package:url_launcher/url_launcher.dart';
-
-// class Detailspage extends StatelessWidget {
-//   final Map<String, dynamic> vendorData;
-
-//   const Detailspage({
-//     Key? key,
-//     required this.vendorData,
-//   }) : super(key: key);
-
-//   Future<void> _launchURL(String url) async {
-//     try {
-//       final Uri uri = Uri.parse(url);
-//       if (await canLaunchUrl(uri)) {
-//         await launchUrl(uri, mode: LaunchMode.externalApplication);
-//       } else {
-//         throw 'Could not launch $url';
-//       }
-//     } catch (e) {
-//       print('Error launching URL: $e');
-//     }
-//   }
-
-//   Future<void> _launchPhone(String phone) async {
-//     final Uri uri = Uri(scheme: 'tel', path: phone);
-//     if (await canLaunchUrl(uri)) {
-//       await launchUrl(uri);
-//     }
-//   }
-
-//   Future<void> _launchWhatsApp(String phone, BuildContext context) async {
-//     try {
-//       // Remove any non-numeric characters from the phone number
-//       String cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
-
-//       // Add country code if not present (assuming Indian numbers)
-//       if (!cleanPhone.startsWith('91')) {
-//         cleanPhone = '91$cleanPhone';
-//       }
-
-//       // Create WhatsApp URL
-//       final Uri whatsappUri = Uri.parse('https://wa.me/$cleanPhone');
-
-//       if (await canLaunchUrl(whatsappUri)) {
-//         await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
-//       } else {
-//         // Show error message if WhatsApp is not installed
-//         if (context.mounted) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             const SnackBar(content: Text('WhatsApp is not installed')),
-//           );
-//         }
-//       }
-//     } catch (e) {
-//       if (context.mounted) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           SnackBar(content: Text('Error launching WhatsApp: $e')),
-//         );
-//       }
-//       print('Error launching WhatsApp: $e');
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(
-//           vendorData['name'],
-//           style:
-//               const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
-//         ),
-//         centerTitle: true,
-//         backgroundColor: Colors.black,
-//       ),
-//       body: SingleChildScrollView(
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             if (vendorData['image']?.isNotEmpty ?? false)
-//               Container(
-//                 width: double.infinity,
-//                 height: 200,
-//                 decoration: BoxDecoration(
-//                   image: DecorationImage(
-//                     image: NetworkImage(vendorData['image']),
-//                     fit: BoxFit.cover,
-//                   ),
-//                 ),
-//               ),
-//             Padding(
-//               padding: const EdgeInsets.all(16.0),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   const SizedBox(height: 16),
-//                   Text(
-//                     vendorData['name'],
-//                     style: const TextStyle(
-//                       fontSize: 24,
-//                       fontWeight: FontWeight.bold,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 8),
-//                   Text(
-//                     '${vendorData['distance'].toStringAsFixed(1)} km away',
-//                     style: const TextStyle(
-//                       fontSize: 16,
-//                       color: Colors.green,
-//                       fontWeight: FontWeight.w500,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 16),
-//                   if (vendorData['Description']?.isNotEmpty ?? false) ...[
-//                     const Text(
-//                       'About',
-//                       style: TextStyle(
-//                         fontSize: 18,
-//                         fontWeight: FontWeight.bold,
-//                       ),
-//                     ),
-//                     const SizedBox(height: 8),
-//                     Text(
-//                       vendorData['Description'],
-//                       style: const TextStyle(fontSize: 16),
-//                     ),
-//                     const SizedBox(height: 16),
-//                   ],
-//                   ListTile(
-//                     leading: const Icon(Icons.location_on, color: Colors.red),
-//                     title: Text(
-//                         vendorData['address'] ?? 'Click here to find location'),
-//                     onTap: () {
-//                       final dynamicUrl =
-//                           "https://www.google.com/maps/search/?api=1&query=${vendorData['latitude']},${vendorData['longitude']}";
-//                       _launchURL(dynamicUrl);
-//                     },
-//                   ),
-//                   ListTile(
-//                     leading: const Icon(Icons.phone, color: Colors.green),
-//                     title: Text(vendorData['phone']),
-//                     onTap: () => _launchPhone(vendorData['phone']),
-//                   ),
-//                   ListTile(
-//                     leading: Image.asset(
-//                       'assets/whatsapp-icons.png',
-//                       height: 30,
-//                       width: 30,
-//                     ),
-//                     title: Text('Chat on WhatsApp'),
-//                     onTap: () => _launchWhatsApp(vendorData['phone'], context),
-//                   ),
-//                   if (vendorData['email']?.isNotEmpty ?? false)
-//                     ListTile(
-//                       leading: const Icon(Icons.email, color: Colors.blue),
-//                       title: Te                                                                          xt(vendorData['email']),
-//                       onTap: () => _launchURL('mailto:${vendorData['email']}'),
-//                     ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Detailspage extends StatefulWidget {
@@ -182,20 +16,88 @@ class Detailspage extends StatefulWidget {
 class _DetailspageState extends State<Detailspage> {
   final TextEditingController _feedbackController = TextEditingController();
   double _rating = 0.0;
+  late String vendorId; // Unique ID for feedback
+  String? currentUserEmail;
 
-  Future<void> _launchURL(String url) async {
+  @override
+  void initState() {
+    super.initState();
+    vendorId = widget.vendorData['email'];
+    _fetchCurrentUserEmail();
+  }
+
+  Future<void> _fetchCurrentUserEmail() async {
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (userId.isEmpty) return;
+
     try {
-      final Uri uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch $url';
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('user_reg')
+          .doc(userId)
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          currentUserEmail = userDoc['email'];
+        });
       }
     } catch (e) {
-      print('Error launching URL: $e');
+      debugPrint("Error fetching user email: $e");
     }
   }
 
+  Future<void> _submitFeedback() async {
+    if (vendorId.isEmpty || currentUserEmail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: Missing vendor or user info!')),
+      );
+      return;
+    }
+
+    String feedbackText = _feedbackController.text;
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? 'Anonymous';
+
+    if (feedbackText.isEmpty || _rating == 0.0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please provide a rating and feedback')),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('feedback').add({
+        'vendorId': vendorId,
+        'userId': userId,
+        'userEmail': currentUserEmail,
+        'rating': _rating,
+        'comment': feedbackText,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Feedback submitted successfully!')),
+      );
+
+      _feedbackController.clear();
+      setState(() {
+        _rating = 0.0;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error submitting feedback: $e')),
+      );
+    }
+  }
+
+  /// Launch a URL
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  /// Launch phone call
   Future<void> _launchPhone(String phone) async {
     final Uri uri = Uri(scheme: 'tel', path: phone);
     if (await canLaunchUrl(uri)) {
@@ -203,7 +105,8 @@ class _DetailspageState extends State<Detailspage> {
     }
   }
 
-  Future<void> _launchWhatsApp(String phone, BuildContext context) async {
+  /// Launch WhatsApp
+  Future<void> _launchWhatsApp(String phone) async {
     try {
       String cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
       if (!cleanPhone.startsWith('91')) {
@@ -214,32 +117,13 @@ class _DetailspageState extends State<Detailspage> {
       if (await canLaunchUrl(whatsappUri)) {
         await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
       } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('WhatsApp is not installed')),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error launching WhatsApp: $e')),
+          const SnackBar(content: Text('WhatsApp is not installed')),
         );
       }
+    } catch (e) {
       print('Error launching WhatsApp: $e');
     }
-  }
-
-  void _submitFeedback() {
-    String feedback = _feedbackController.text;
-    print('Rating: $_rating, Feedback: $feedback');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Feedback submitted successfully!')),
-    );
-    _feedbackController.clear();
-    setState(() {
-      _rating = 0.0;
-    });
   }
 
   @override
@@ -281,36 +165,29 @@ class _DetailspageState extends State<Detailspage> {
                         fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    '${widget.vendorData['distance'].toStringAsFixed(1)} km away',
-                    style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.green,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 16),
-                  if (widget.vendorData['Description']?.isNotEmpty ??
-                      false) ...[
-                    const Text(
-                      'About',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      widget.vendorData['Description'],
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
                   ListTile(
                     leading: const Icon(Icons.location_on, color: Colors.red),
                     title: Text(widget.vendorData['address'] ??
                         'Click here to find location'),
-                    onTap: () {
-                      final dynamicUrl =
+                    onTap: () async {
+                      String dynamicUrl =
                           "https://www.google.com/maps/search/?api=1&query=${widget.vendorData['latitude']},${widget.vendorData['longitude']}";
-                      _launchURL(dynamicUrl);
+
+                      try {
+                        await FirebaseFirestore.instance
+                            .collection('shop_analytics')
+                            .add({
+                          'shopId': vendorId,
+                          'timestamp': FieldValue.serverTimestamp(),
+                          'eventType': 'location_click',
+                          'userId': FirebaseAuth.instance.currentUser?.uid ??
+                              'anonymous'
+                        });
+
+                        _launchURL(dynamicUrl);
+                      } catch (e) {
+                        debugPrint("Error logging location click: $e");
+                      }
                     },
                   ),
                   ListTile(
@@ -319,14 +196,10 @@ class _DetailspageState extends State<Detailspage> {
                     onTap: () => _launchPhone(widget.vendorData['phone']),
                   ),
                   ListTile(
-                    leading: Image.asset(
-                      'assets/whatsapp-icons.png',
-                      height: 30,
-                      width: 30,
-                    ),
+                    leading: Image.asset('assets/whatsapp-icons.png',
+                        height: 30, width: 30),
                     title: const Text('Chat on WhatsApp'),
-                    onTap: () =>
-                        _launchWhatsApp(widget.vendorData['phone'], context),
+                    onTap: () => _launchWhatsApp(widget.vendorData['phone']),
                   ),
                   if (widget.vendorData['email']?.isNotEmpty ?? false)
                     ListTile(
@@ -336,10 +209,9 @@ class _DetailspageState extends State<Detailspage> {
                           _launchURL('mailto:${widget.vendorData['email']}'),
                     ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Rate & Review',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  const Text('Rate & Review',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   RatingBar.builder(
                     initialRating: _rating,
@@ -356,7 +228,6 @@ class _DetailspageState extends State<Detailspage> {
                       });
                     },
                   ),
-                  const SizedBox(height: 8),
                   TextField(
                     controller: _feedbackController,
                     maxLines: 3,
@@ -366,18 +237,13 @@ class _DetailspageState extends State<Detailspage> {
                           borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber),
-                      onPressed: _submitFeedback,
-                      child: const Text('Submit Feedback',
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold)),
-                    ),
+                  ElevatedButton(
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+                    onPressed: _submitFeedback,
+                    child: const Text('Submit Feedback',
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

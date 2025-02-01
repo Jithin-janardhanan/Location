@@ -160,6 +160,7 @@ class _RegistrationState extends State<Registration> {
                             'phone': _number.text,
                             'email': _email.text,
                             'image': imageUrl,
+                            'userId': FirebaseAuth.instance.currentUser?.uid,
                           });
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text("Profile saved successfully!")));

@@ -129,6 +129,18 @@ class _UserListPageState extends State<UserListPage> {
         title: Text('User List', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.white),
+            onPressed: () {
+              // Navigate to login screen and remove all previous routes
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('user_reg').snapshots(),

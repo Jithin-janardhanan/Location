@@ -200,6 +200,7 @@ class _UserShopState extends State<UserShop> {
                     final String imageUrl = vendorDoc['image'] ?? '';
                     final String vendorPhone = vendorDoc['phone'] ?? '';
                     final String vendorcategory = vendorDoc['category'] ?? '';
+                    final String vendorID = vendorDoc['vendorId'] ?? '';
 
                     double distance = calculateDistance(
                       userLat!,
@@ -209,23 +210,40 @@ class _UserShopState extends State<UserShop> {
                     );
 
                     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Detailspage(
-                              vendorData: {
-                                'name': vendorName,
-                                'image': imageUrl,
-                                'phone': vendorPhone,
-                                'distance': distance,
-                                'latitude': vendorDoc['latitude'] ?? 0,
-                                'longitude': vendorDoc['longitude'] ?? 0,
-                                'email': vendorDoc['email'] ?? '',
-                              },
+                      onTap: () async {
+                        try {
+                          // Log shop view with debug print
+                          await FirebaseFirestore.instance
+                              .collection('shop_analytics')
+                              .add({
+                            'shopId': vendorDoc.id,
+                            'timestamp': FieldValue.serverTimestamp(),
+                            'eventType': 'view',
+                            'userId': FirebaseAuth.instance.currentUser?.uid ??
+                                'anonymous'
+                          });
+                          print('Successfully logged shop view to Firebase');
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Detailspage(
+                                vendorData: {
+                                  'name': vendorName,
+                                  'image': imageUrl,
+                                  'phone': vendorPhone,
+                                  'distance': distance,
+                                  'latitude': vendorDoc['latitude'] ?? 0,
+                                  'longitude': vendorDoc['longitude'] ?? 0,
+                                  'email': vendorDoc['email'] ?? '',
+                                  'id': vendorDoc.id,
+                                },
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        } catch (e) {
+                          print('Error logging shop view: $e');
+                        }
                       },
                       child: Container(
                         margin: const EdgeInsets.all(8.0),
@@ -286,27 +304,46 @@ class _UserShopState extends State<UserShop> {
                               ),
                             ),
                             IconButton(
-                              onPressed: () {
-                                final double vendorLat =
-                                    vendorDoc['latitude'] ?? 0.0;
-                                final double vendorLng =
-                                    vendorDoc['longitude'] ?? 0.0;
+                              onPressed: () async {
+                                try {
+                                  // Log location click with debug print
+                                  await FirebaseFirestore.instance
+                                      .collection('shop_analytics')
+                                      .add({
+                                    'shopId': vendorDoc.id,
+                                    'timestamp': FieldValue.serverTimestamp(),
+                                    'eventType': 'location_clicks',
+                                    'userId': FirebaseAuth
+                                            .instance.currentUser?.uid ??
+                                        'anonymous'
+                                  });
+                                  print(
+                                      'Successfully logged location click to Firebase');
 
-                                if (vendorLat != 0.0 &&
-                                    vendorLng != 0.0 &&
-                                    vendorLat >= -90 &&
-                                    vendorLat <= 90 &&
-                                    vendorLng >= -180 &&
-                                    vendorLng <= 180) {
-                                  final String dynamicUrl =
-                                      "https://www.google.com/maps/search/?api=1&query=$vendorLat,$vendorLng";
-                                  print('Launching URL: $dynamicUrl');
-                                  _launchURL(dynamicUrl);
-                                } else {
+                                  final double vendorLat =
+                                      vendorDoc['latitude'] ?? 0.0;
+                                  final double vendorLng =
+                                      vendorDoc['longitude'] ?? 0.0;
+
+                                  // Add debug print for coordinates
+                                  print(
+                                      'Vendor coordinates: $vendorLat, $vendorLng');
+
+                                  if (vendorLat != 0.0 && vendorLng != 0.0) {
+                                    final String dynamicUrl =
+                                        "https://www.google.com/maps/search/?api=1&query=$vendorLat,$vendorLng";
+                                    _launchURL(dynamicUrl);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Vendor location not available.')),
+                                    );
+                                  }
+                                } catch (e) {
+                                  print('Error logging location click: $e');
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Vendor location not available or invalid.')),
+                                    SnackBar(content: Text('Error: $e')),
                                   );
                                 }
                               },
