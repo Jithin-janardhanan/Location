@@ -46,7 +46,6 @@ class _LoginPageState extends State<LoginPage> {
               image: AssetImage('assets/sPOT.PNG'),
               height: 200,
             ),
-            // Image.asset('assets/SplashScreen__1_-removebg-preview.png'),
             Text(
               'Welcome Back to spot',
               style: TextStyle(
@@ -121,22 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 30.0),
                       child: MaterialButton(
                           minWidth: double.maxFinite,
-                          onPressed: _login
-                          //  () {
-                          //   if (formkey.currentState!.validate()) {
-                          //     // Perform signup logic here
-                          //     ScaffoldMessenger.of(context).showSnackBar(
-                          //       const SnackBar(
-                          //           content: Text("Login Successful")),
-                          //     );
-
-                          //     Navigator.push(
-                          //         context,
-                          //         MaterialPageRoute(
-                          //             builder: (context) => HomePage()));
-                          //   }
-                          // },
-                          ,
+                          onPressed: _login,
                           color: Colors.blue,
                           textColor: const Color.fromARGB(255, 254, 254, 254),
                           shape: RoundedRectangleBorder(
@@ -185,37 +169,62 @@ class _LoginPageState extends State<LoginPage> {
         if (user != null) {
           String userId = user.uid;
 
-          // Fetch user role from Firestore
           DocumentSnapshot userDoc = await FirebaseFirestore.instance
-              .collection('users')
+              .collection(
+                  'user_reg') // Make sure this is the correct collection name
               .doc(userId)
               .get();
 
+          // Debugging: Print document data
+          print("User Document Data: ${userDoc.data()}");
+
           if (userDoc.exists) {
-            String role = userDoc['role'];
+            Map<String, dynamic>? userData =
+                userDoc.data() as Map<String, dynamic>?;
+
+            if (userData == null || !userData.containsKey('role')) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: User role is missing!')),
+              );
+              return;
+            }
+
+            String role = userData['role'] ?? 'unknown';
+            String status = userData['status'] ?? 'inactive';
+
+            print("User Role: $role");
+            print("User Status: $status");
+
+            if (status == 'blocked') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content:
+                        Text('Your account has been blocked by the admin.')),
+              );
+              return;
+            }
 
             if (role == 'user') {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('User Login Successful!')),
+                SnackBar(content: Text('User Login Successful!')),
               );
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => BottomNavigation()),
               );
-            } else if (role == 'vendor') {
+            } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content:
-                        Text('Access Denied: Vendor cannot login as user!')),
+                SnackBar(content: Text('Access Denied: Unrecognized role!')),
               );
             }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('User data not found!')),
+              SnackBar(content: Text('User data not found in Firestore!')),
             );
           }
         }
       } catch (e) {
+        print("Error: $e"); // Debugging
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login failed: ${e.toString()}')),
         );

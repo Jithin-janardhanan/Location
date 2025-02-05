@@ -14,7 +14,7 @@ class BottomNavigationadmin extends StatefulWidget {
 class _BottomNavigationadminState extends State<BottomNavigationadmin> {
   int indexNum = 0;
   List tabWidgets = [
-    UserListPage(),
+    AdminUserManagement(),
     Adminvendor(),
     CharityMemberList(),
     ShopAnalyticsBarChart()
@@ -22,35 +22,37 @@ class _BottomNavigationadminState extends State<BottomNavigationadmin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.black,
-          unselectedItemColor: Colors.white,
-          selectedItemColor: const Color.fromARGB(255, 23, 16, 15),
-          items: const [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: "user",
-                backgroundColor: Color.fromARGB(255, 186, 17, 17)),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.business),
-                label: "Vendor",
-                backgroundColor: Color.fromARGB(255, 116, 25, 25)),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.money),
-                label: "charity",
-                backgroundColor: Color.fromARGB(255, 116, 25, 25)),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.auto_graph_rounded),
-                label: "graph",
-                backgroundColor: Color.fromARGB(255, 116, 25, 25)),
-          ],
-          selectedFontSize: 25,
-          currentIndex: indexNum,
-          onTap: (int index) {
-            setState(() {
-              indexNum = index;
-            });
-          }),
+      bottomNavigationBar: SizedBox(
+        child: BottomNavigationBar(
+            backgroundColor: Colors.white,
+            unselectedItemColor: const Color.fromARGB(255, 197, 157, 12),
+            selectedItemColor: const Color.fromARGB(255, 246, 242, 241),
+            items: const [
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: "user",
+                  backgroundColor: Color.fromARGB(255, 16, 15, 15)),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.business),
+                  label: "Vendor",
+                  backgroundColor: Color.fromARGB(255, 20, 3, 3)),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.money),
+                  label: "charity",
+                  backgroundColor: Color.fromARGB(255, 27, 15, 15)),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.auto_graph_rounded),
+                  label: "graph",
+                  backgroundColor: Color.fromARGB(255, 16, 5, 5)),
+            ],
+            selectedFontSize: 25,
+            currentIndex: indexNum,
+            onTap: (int index) {
+              setState(() {
+                indexNum = index;
+              });
+            }),
+      ),
       body: Center(child: tabWidgets.elementAt(indexNum)),
     );
   }

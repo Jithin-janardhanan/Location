@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:spot/user/authentication/login.dart';
 
 class Adminvendor extends StatefulWidget {
   Adminvendor({super.key});
@@ -79,10 +80,22 @@ class _AdminvendorState extends State<Adminvendor> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
+        centerTitle: true,
         title: Text(
-          'Spot',
+          'Vendor List',
           style: TextStyle(color: Colors.amber),
         ),
+        actions: [
+          ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginPage(),
+                    ));
+              },
+              child: Icon(Icons.logout))
+        ],
       ),
       body: StreamBuilder(
         stream: vendorreg.snapshots(),
@@ -152,16 +165,6 @@ class _AdminvendorState extends State<Adminvendor> {
                       ),
                     ),
                     SizedBox(width: 16.0),
-
-                    // IconButton(
-                    //   icon: Icon(Icons.upload, color: Colors.blue),
-                    //   onPressed: () async {
-                    //     await _pickImage();
-                    //     if (_image != null) {
-                    //       await _uploadAndSaveToFirestore(vendorId);
-                    //     }
-                    //   },
-                    // ),
                   ],
                 ),
               );

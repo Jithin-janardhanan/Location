@@ -64,6 +64,61 @@ class _UserShopState extends State<UserShop> {
     return degree * pi / 180;
   }
 
+  Future<void> logShopAnalytics(String vendorId, String eventType) async {
+    try {
+      final String today = DateTime.now().toIso8601String().split('T')[0];
+      final String userId =
+          FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+
+      // Update daily analytics
+      final dailyDocRef = FirebaseFirestore.instance
+          .collection('shop_analytics_daily')
+          .doc('${vendorId}_$today');
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        DocumentSnapshot dailyDoc = await transaction.get(dailyDocRef);
+
+        if (!dailyDoc.exists) {
+          transaction.set(dailyDocRef, {
+            'vendorId': vendorId,
+            'date': today,
+            'views': eventType == 'view' ? 1 : 0,
+            'mapClicks': eventType == 'location_clicks' ? 1 : 0,
+            'uniqueVisitors': [userId],
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        } else {
+          Map<String, dynamic> data = dailyDoc.data() as Map<String, dynamic>;
+          List<dynamic> visitors = List.from(data['uniqueVisitors'] ?? []);
+
+          if (!visitors.contains(userId)) {
+            visitors.add(userId);
+          }
+
+          transaction.update(dailyDocRef, {
+            eventType == 'view' ? 'views' : 'mapClicks':
+                FieldValue.increment(1),
+            'uniqueVisitors': visitors,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
+      });
+
+      // Update summary analytics
+      await FirebaseFirestore.instance
+          .collection('shop_analytics_summary')
+          .doc(vendorId)
+          .set({
+        'totalViews': FieldValue.increment(eventType == 'view' ? 1 : 0),
+        'totalMapClicks':
+            FieldValue.increment(eventType == 'location_clicks' ? 1 : 0),
+        'lastUpdate': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print('Error logging analytics: $e');
+    }
+  }
+
   Future<void> getUserLocation() async {
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;
@@ -212,6 +267,7 @@ class _UserShopState extends State<UserShop> {
                     return GestureDetector(
                       onTap: () async {
                         try {
+                          await logShopAnalytics(vendorDoc.id, 'view');
                           // Log shop view with debug print
                           await FirebaseFirestore.instance
                               .collection('shop_analytics')
@@ -230,6 +286,7 @@ class _UserShopState extends State<UserShop> {
                               builder: (context) => Detailspage(
                                 vendorData: {
                                   'name': vendorName,
+                                  'vendorId': vendorID,
                                   'image': imageUrl,
                                   'phone': vendorPhone,
                                   'distance': distance,
@@ -306,6 +363,8 @@ class _UserShopState extends State<UserShop> {
                             IconButton(
                               onPressed: () async {
                                 try {
+                                  await logShopAnalytics(
+                                      vendorDoc.id, 'location_clicks');
                                   // Log location click with debug print
                                   await FirebaseFirestore.instance
                                       .collection('shop_analytics')

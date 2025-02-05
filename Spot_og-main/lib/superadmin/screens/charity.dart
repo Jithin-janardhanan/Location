@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:spot/user/authentication/login.dart';
 
 class CharityMemberList extends StatefulWidget {
   @override
@@ -11,9 +12,23 @@ class _CharityMemberListState extends State<CharityMemberList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Charity Members', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         centerTitle: true,
+        title: Text(
+          'Charity',
+          style: TextStyle(color: Colors.amber),
+        ),
+        actions: [
+          ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginPage(),
+                    ));
+              },
+              child: Icon(Icons.logout))
+        ],
       ),
       body: StreamBuilder(
         stream:
