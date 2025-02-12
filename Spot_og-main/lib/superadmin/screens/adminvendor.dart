@@ -1,9 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
+// import 'dart:convert';
+// import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
+
+// import 'package:http/http.dart' as http;
 import 'package:spot/user/authentication/login.dart';
 
 class Adminvendor extends StatefulWidget {
@@ -14,63 +14,63 @@ class Adminvendor extends StatefulWidget {
 }
 
 class _AdminvendorState extends State<Adminvendor> {
-  File? _image;
+//   File? _image;
 
   /// Picks an image from the gallery
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  // Future<void> _pickImage() async {
+  //   final picker = ImagePicker();
+  //   final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-    }
-  }
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       _image = File(pickedFile.path);
+  //     });
+  //   }
+  // }
 
   /// Uploads the image to Cloudinary and returns the URL
 
-  Future<String?> _uploadToCloudinary() async {
-    if (_image == null) return null;
+  // Future<String?> _uploadToCloudinary() async {
+  //   if (_image == null) return null;
 
-    try {
-      final url = Uri.parse('https://api.cloudinary.com/v1_1/datygsam7/upload');
-      final request = http.MultipartRequest('POST', url);
+  //   try {
+  //     final url = Uri.parse('https://api.cloudinary.com/v1_1/datygsam7/upload');
+  //     final request = http.MultipartRequest('POST', url);
 
-      request.fields['upload_preset'] = 'SpotApplication';
-      request.files
-          .add(await http.MultipartFile.fromPath('file', _image!.path));
+  //     request.fields['upload_preset'] = 'SpotApplication';
+  //     request.files
+  //         .add(await http.MultipartFile.fromPath('file', _image!.path));
 
-      final response = await request.send();
-      if (response.statusCode == 200) {
-        final responseData = await response.stream.toBytes();
-        final responseString = String.fromCharCodes(responseData);
-        final jsonMap = jsonDecode(responseString);
-        return jsonMap['secure_url'] as String;
-      } else {
-        throw HttpException('Upload failed with status ${response.statusCode}');
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error uploading image: $e')),
-      );
-      return null;
-    }
-  }
+  //     final response = await request.send();
+  //     if (response.statusCode == 200) {
+  //       final responseData = await response.stream.toBytes();
+  //       final responseString = String.fromCharCodes(responseData);
+  //       final jsonMap = jsonDecode(responseString);
+  //       return jsonMap['secure_url'] as String;
+  //     } else {
+  //       throw HttpException('Upload failed with status ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Error uploading image: $e')),
+  //     );
+  //     return null;
+  //   }
+  // }
 
   /// Uploads the image to Cloudinary and saves the URL to Firestore
-  Future<void> _uploadAndSaveToFirestore(String vendorId) async {
-    final imageUrl = await _uploadToCloudinary();
-    if (imageUrl != null) {
-      await FirebaseFirestore.instance
-          .collection('vendor_reg')
-          .doc(vendorId)
-          .update({'image': imageUrl});
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Image uploaded and saved successfully!')),
-      );
-    }
-  }
+  // Future<void> _uploadAndSaveToFirestore(String vendorId) async {
+  //   final imageUrl = await _uploadToCloudinary();
+  //   if (imageUrl != null) {
+  //     await FirebaseFirestore.instance
+  //         .collection('vendor_reg')
+  //         .doc(vendorId)
+  //         .update({'image': imageUrl});
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Image uploaded and saved successfully!')),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {

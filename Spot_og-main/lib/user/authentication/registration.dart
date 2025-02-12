@@ -169,7 +169,7 @@ class _RegistrationState extends State<Registration> {
 
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                 content: Text("Profile saved successfully!")));
-                            Navigator.push(
+                            Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => BottomNavigation()));

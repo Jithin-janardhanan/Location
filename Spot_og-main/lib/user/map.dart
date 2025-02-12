@@ -14,7 +14,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   late MapboxMap _mapboxMap;
   final String accessToken =
-      "YOUR_MAPBOX_ACCESS_TOKEN"; // Replace with your Mapbox token
+      "MAPBOX_ACCESS_TOKEN"; // Replace with your Mapbox token
   CameraOptions? _initialCameraOptions;
   bool _permissionGranted = false;
   PointAnnotation? _userLocationMarker;
@@ -132,7 +132,7 @@ class _MapScreenState extends State<MapScreen> {
         center: Point(
           coordinates: Position(position.longitude, position.latitude),
         ),
-        zoom: 14.0,
+        zoom: 17.0,
       ),
     );
 

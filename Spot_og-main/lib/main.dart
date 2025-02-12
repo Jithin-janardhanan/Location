@@ -11,7 +11,8 @@ void main() async {
   } catch (e) {
     throw Exception('Error loading .env file: $e'); // Print error if any
   }
-  MapboxOptions.setAccessToken("APBOX_ACCESS_TOKEN");
+  MapboxOptions.setAccessToken(
+      "pk.eyJ1Ijoiaml0aGluamFuYXJkaGFuYW4iLCJhIjoiY202OHcweDV6MDZtbDJrcXRsdzdyNmpvbSJ9.2K69HselCgR9Dp85Wcn3oQ");
   // Initialize Firebase
   await Firebase.initializeApp(
     options: FirebaseOptions(

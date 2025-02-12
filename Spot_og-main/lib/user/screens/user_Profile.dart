@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:spot/user/authentication/login.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
@@ -329,10 +330,28 @@ class _UserProfileState extends State<UserProfile> {
                                     ),
                                   ),
                                 ),
+                                const SizedBox(height: 20),
+
+                                // Privacy Policy Link (Read-Only)
+                                GestureDetector(
+                                  onTap: () {
+                                    // Open Privacy Policy URL
+                                    launchUrl(Uri.parse(
+                                        "https://www.freeprivacypolicy.com/live/f2379df2-bc9a-444b-9b35-a71f2d885496"));
+                                  },
+                                  child: const Text(
+                                    "Read our Privacy Policy",
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                        ),
+                        )
                       ],
                     ),
                   ),

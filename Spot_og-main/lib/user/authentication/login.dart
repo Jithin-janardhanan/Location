@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
 
     // Admin login check
     if (email == 'Admin@gmail.com' && password == 'Admin@1234') {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => BottomNavigationadmin()),
       );
@@ -208,10 +208,9 @@ class _LoginPageState extends State<LoginPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('User Login Successful!')),
               );
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => BottomNavigation()),
-              );
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => BottomNavigation()),
+                  (route) => false);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Access Denied: Unrecognized role!')),

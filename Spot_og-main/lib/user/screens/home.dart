@@ -11,8 +11,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   Position? _position; // To store the current location
-  final FirebaseFirestore _firestore =
-      FirebaseFirestore.instance; // Firestore instance
+  // final FirebaseFirestore _firestore =
+  //     FirebaseFirestore.instance; // Firestore instance
 
   Future<void> getCurrentLocation() async {
     print('Getting current location...');
