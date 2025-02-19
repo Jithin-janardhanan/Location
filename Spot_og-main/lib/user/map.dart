@@ -3,6 +3,9 @@ import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
+import 'dart:ui' as ui;
+
+import 'package:spot/user/screens/widgets/navigate.dart'; // Use 'ui.Size' to avoid conflict
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -18,6 +21,7 @@ class _MapScreenState extends State<MapScreen> {
   CameraOptions? _initialCameraOptions;
   bool _permissionGranted = false;
   PointAnnotation? _userLocationMarker;
+  // late MapboxNavigation _navigation;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -26,6 +30,18 @@ class _MapScreenState extends State<MapScreen> {
     super.initState();
     _initializeMap();
   }
+
+  //  void _onMapCreated(MapboxMap mapboxMap) {
+  //   _mapboxMap = mapboxMap;
+  //   _navigation = MapboxNavigation(
+  //     accessToken: accessToken,
+  //     mapboxMap: mapboxMap,
+  //   );
+
+  //   if (_permissionGranted) {
+  //     _startLocationUpdates();
+  //   }
+  // }
 
   Future<void> _initializeMap() async {
     try {
@@ -172,13 +188,35 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Spot',
-          style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+      extendBodyBehindAppBar:
+          true, // Ensure gradient extends behind the app bar
+      appBar: PreferredSize(
+        preferredSize: const ui.Size.fromHeight(56.0), // Standard AppBar height
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.fromARGB(255, 14, 11, 11),
+                Color.fromARGB(255, 0, 0, 0)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: AppBar(
+            title: const Text(
+              'Spot',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            centerTitle: true,
+            backgroundColor:
+                Colors.transparent, // Set to transparent to show the gradient
+            elevation: 0, // Optional: remove shadow for a cleaner look
+          ),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.black,
       ),
       body: _initialCameraOptions != null
           ? MapWidget(
@@ -194,13 +232,17 @@ class _MapScreenState extends State<MapScreen> {
               textureView: true,
             )
           : const Center(child: CircularProgressIndicator()),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _requestPermission();
-        },
-        child: const Icon(Icons.location_on),
-        tooltip: 'Request Location Permission',
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 50.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            _requestPermission();
+          },
+          child: const Icon(Icons.location_on),
+          tooltip: 'Request Location Permission',
+        ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

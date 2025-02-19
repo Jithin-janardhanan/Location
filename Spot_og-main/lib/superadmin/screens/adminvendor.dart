@@ -87,14 +87,22 @@ class _AdminvendorState extends State<Adminvendor> {
         ),
         actions: [
           ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LoginPage(),
-                    ));
-              },
-              child: Icon(Icons.logout))
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              backgroundColor: Colors.amber,
+            ),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LoginPage(),
+                ),
+              );
+            },
+            child: Icon(Icons.logout, color: Colors.black),
+          )
         ],
       ),
       body: StreamBuilder(
@@ -114,7 +122,6 @@ class _AdminvendorState extends State<Adminvendor> {
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               final DocumentSnapshot vendorDoc = snapshot.data!.docs[index];
-              // final String vendorId = vendorDoc.id;
               final String vendorName = vendorDoc['name'] ?? 'No Name';
               final String imageUrl = vendorDoc['image'] ?? '';
               final String vendorphone = vendorDoc['phone'] ?? '';
@@ -146,25 +153,28 @@ class _AdminvendorState extends State<Adminvendor> {
                     SizedBox(width: 16.0),
                     Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             vendorName,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
                           ),
                           Text(
                             vendorphone,
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.black54,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(width: 16.0),
+                    Icon(Icons.arrow_forward_ios, color: Colors.grey),
                   ],
                 ),
               );

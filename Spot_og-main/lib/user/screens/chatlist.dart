@@ -304,16 +304,43 @@ class ChatListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+// Helper function to format time
+    String _formatTime(DateTime time) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final messageDate = DateTime(time.year, time.month, time.day);
+
+      if (messageDate == today) {
+        return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+      } else if (messageDate == yesterday) {
+        return 'Yesterday';
+      } else {
+        return '${time.day}/${time.month}/${time.year}';
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Chats'),
+        elevation: 0,
         backgroundColor: Colors.black,
-        titleTextStyle: const TextStyle(
-          color: Colors.amber,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
+        title: const Text(
+          'Messages',
+          style: TextStyle(
+            color: Colors.amber,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+          ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.amber),
+            onPressed: () {
+              // Implement search functionality
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -323,66 +350,183 @@ class ChatListScreen extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Something went wrong',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.red,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    snapshot.error.toString(),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            );
           }
 
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+              ),
+            );
           }
 
           final chatRooms = snapshot.data!.docs;
 
           if (chatRooms.isEmpty) {
-            return const Center(child: Text('No chats yet'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.chat_bubble_outline,
+                      size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No conversations yet',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Start chatting with vendors',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[500],
+                        ),
+                  ),
+                ],
+              ),
+            );
           }
 
           return ListView.builder(
             itemCount: chatRooms.length,
+            padding: const EdgeInsets.symmetric(vertical: 8),
             itemBuilder: (context, index) {
               final chatRoom = chatRooms[index].data() as Map<String, dynamic>;
               final userDetails =
                   chatRoom['participantDetails'] as Map<String, dynamic>;
-
-              // Get the other participant's details
               final otherParticipantId = (chatRoom['participants'] as List)
                   .firstWhere((id) => id != currentUserId);
               final otherParticipant = userDetails[otherParticipantId];
+              final lastMessageTime = chatRoom['lastMessageTime'] != null
+                  ? DateTime.fromMillisecondsSinceEpoch(
+                      chatRoom['lastMessageTime'].millisecondsSinceEpoch)
+                  : null;
 
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.amber,
-                  child: Text(
-                    otherParticipant['name'][0].toUpperCase(),
-                    style: const TextStyle(color: Colors.black),
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () {
+                      final vendorData = {
+                        'vendorId': otherParticipantId,
+                        'name': otherParticipant['name'],
+                        'email': otherParticipant['email'],
+                      };
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ChatScreen(vendorData: vendorData),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          Stack(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      spreadRadius: 1,
+                                      blurRadius: 3,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                                child: CircleAvatar(
+                                  radius: 28,
+                                  backgroundColor: Colors.amber,
+                                  child: Text(
+                                    otherParticipant['name'][0].toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Online status indicator could be added here
+                            ],
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      otherParticipant['name'],
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    if (lastMessageTime != null)
+                                      Text(
+                                        _formatTime(lastMessageTime),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  chatRoom['lastMessage'] ?? 'No messages yet',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                title: Text(otherParticipant['name']),
-                subtitle: Text(
-                  chatRoom['lastMessage'] ?? 'No messages yet',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: Text(
-                  chatRoom['lastMessageTime'] != null
-                      ? DateTime.fromMillisecondsSinceEpoch(
-                          chatRoom['lastMessageTime'].millisecondsSinceEpoch,
-                        ).toString().substring(11, 16)
-                      : '',
-                ),
-                onTap: () {
-                  final vendorData = {
-                    'vendorId': otherParticipantId,
-                    'name': otherParticipant['name'],
-                    'email': otherParticipant['email'],
-                  };
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(vendorData: vendorData),
-                    ),
-                  );
-                },
               );
             },
           );
