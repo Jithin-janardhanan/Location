@@ -292,12 +292,20 @@ class _DetailspageState extends State<Detailspage> {
   double _rating = 0.0;
   late String vendorId; // Unique ID for feedback
   String? currentUserEmail;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     vendorId = widget.vendorData['email'];
+    _initializeData();
     _fetchCurrentUserEmail();
+  }
+
+  Future<void> _initializeData() async {
+    setState(() => _isLoading = true);
+    await _fetchCurrentUserEmail();
+    setState(() => _isLoading = false);
   }
 
   Future<void> _fetchCurrentUserEmail() async {
@@ -363,6 +371,14 @@ class _DetailspageState extends State<Detailspage> {
     }
   }
 
+  Stream<QuerySnapshot> _getFeedbackStream() {
+    return FirebaseFirestore.instance
+        .collection('feedback')
+        .where('vendorId', isEqualTo: vendorId)
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
   /// Launch a URL
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
@@ -406,6 +422,18 @@ class _DetailspageState extends State<Detailspage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.black.withOpacity(0.7),
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
@@ -415,7 +443,12 @@ class _DetailspageState extends State<Detailspage> {
           Container(
             margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.amber.withOpacity(0.3),
+                  Colors.orange.withOpacity(0.3),
+                ],
+              ),
               borderRadius: BorderRadius.circular(50),
             ),
             child: IconButton(
@@ -434,224 +467,237 @@ class _DetailspageState extends State<Detailspage> {
           )
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Hero Image Section
-            Stack(
-              children: [
-                if (widget.vendorData['image']?.isNotEmpty ?? false)
-                  Container(
-                    width: double.infinity,
-                    height: 300,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(widget.vendorData['image']),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                Container(
-                  width: double.infinity,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  child: Text(
-                    widget.vendorData['name'],
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 10,
-                          color: Colors.black,
-                          offset: Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Contact Information Cards
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Colors.amber,
+                strokeWidth: 3,
+              ),
+            )
+          : SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Location Card
-                  _buildContactCard(
-                    icon: Icons.location_on,
-                    iconColor: Colors.red,
-                    title: 'Location',
-                    subtitle: widget.vendorData['address'] ??
-                        'Click to find location',
-                    onTap: () async {
-                      String dynamicUrl =
-                          "https://www.google.com/maps/search/?api=1&query=${widget.vendorData['latitude']},${widget.vendorData['longitude']}";
-                      try {
-                        await FirebaseFirestore.instance
-                            .collection('shop_analytics')
-                            .add({
-                          'shopId': widget.vendorData['id'],
-                          'timestamp': FieldValue.serverTimestamp(),
-                          'eventType': 'location_click',
-                          'userId': FirebaseAuth.instance.currentUser?.uid ??
-                              'anonymous'
-                        });
-                        _launchURL(dynamicUrl);
-                      } catch (e) {
-                        debugPrint("Error logging location click: $e");
-                      }
-                    },
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Contact Options Row
-                  Row(
+                  // Hero Image Section
+                  Stack(
                     children: [
-                      Expanded(
-                        child: _buildContactOptionCard(
-                          icon: Icons.phone,
-                          iconColor: Colors.green,
-                          title: 'Call',
-                          onTap: () => _launchPhone(widget.vendorData['phone']),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildContactOptionCard(
-                          icon: Icons.chat,
-                          iconColor: const Color(0xFF25D366),
-                          title: 'WhatsApp',
-                          onTap: () =>
-                              _launchWhatsApp(widget.vendorData['phone']),
-                        ),
-                      ),
-                      if (widget.vendorData['email']?.isNotEmpty ?? false) ...[
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildContactOptionCard(
-                            icon: Icons.email,
-                            iconColor: Colors.blue,
-                            title: 'Email',
-                            onTap: () => _launchURL(
-                                'mailto:${widget.vendorData['email']}'),
+                      if (widget.vendorData['image']?.isNotEmpty ?? false)
+                        Container(
+                          width: double.infinity,
+                          height: 300,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage(widget.vendorData['image']),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
-                      ],
+                      Container(
+                        width: double.infinity,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.7),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 20,
+                        left: 20,
+                        child: Text(
+                          widget.vendorData['name'],
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 10,
+                                color: Colors.black,
+                                offset: Offset(2, 2),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // Reviews Section
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[900],
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                  // Contact Information Cards
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Rate & Review',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: RatingBar.builder(
-                            initialRating: _rating,
-                            minRating: 1,
-                            direction: Axis.horizontal,
-                            allowHalfRating: true,
-                            itemCount: 5,
-                            itemSize: 40,
-                            unratedColor: Colors.grey[700],
-                            itemBuilder: (context, _) => const Icon(
-                              Icons.star_rounded,
-                              color: Colors.amber,
-                            ),
-                            onRatingUpdate: (rating) {
-                              setState(() {
-                                _rating = rating;
+                        // Location Card
+                        _buildContactCard(
+                          icon: Icons.location_on,
+                          iconColor: Colors.red,
+                          title: 'Location',
+                          subtitle: widget.vendorData['address'] ??
+                              'Click to find location',
+                          onTap: () async {
+                            String dynamicUrl =
+                                "https://www.google.com/maps/search/?api=1&query=${widget.vendorData['latitude']},${widget.vendorData['longitude']}";
+                            try {
+                              await FirebaseFirestore.instance
+                                  .collection('shop_analytics')
+                                  .add({
+                                'shopId': widget.vendorData['id'],
+                                'timestamp': FieldValue.serverTimestamp(),
+                                'eventType': 'location_click',
+                                'userId':
+                                    FirebaseAuth.instance.currentUser?.uid ??
+                                        'anonymous'
                               });
-                            },
-                          ),
+                              _launchURL(dynamicUrl);
+                            } catch (e) {
+                              debugPrint("Error logging location click: $e");
+                            }
+                          },
                         ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _feedbackController,
-                          maxLines: 3,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            hintText: 'Share your experience...',
-                            hintStyle: TextStyle(color: Colors.grey[400]),
-                            fillColor: Colors.grey[800],
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                  color: Colors.amber, width: 2),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+
+                        const SizedBox(height: 12),
+
+                        // Contact Options Row
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildContactOptionCard(
+                                icon: Icons.phone,
+                                iconColor: Colors.green,
+                                title: 'Call',
+                                onTap: () =>
+                                    _launchPhone(widget.vendorData['phone']),
                               ),
                             ),
-                            onPressed: _submitFeedback,
-                            child: const Text(
-                              'Submit Review',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildContactOptionCard(
+                                icon: Icons.chat,
+                                iconColor: const Color(0xFF25D366),
+                                title: 'WhatsApp',
+                                onTap: () =>
+                                    _launchWhatsApp(widget.vendorData['phone']),
                               ),
                             ),
+                            if (widget.vendorData['email']?.isNotEmpty ??
+                                false) ...[
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildContactOptionCard(
+                                  icon: Icons.email,
+                                  iconColor: Colors.blue,
+                                  title: 'Email',
+                                  onTap: () => _launchURL(
+                                      'mailto:${widget.vendorData['email']}'),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Reviews Section
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[900],
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Rate & Review',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Center(
+                                child: RatingBar.builder(
+                                  initialRating: _rating,
+                                  minRating: 1,
+                                  direction: Axis.horizontal,
+                                  allowHalfRating: true,
+                                  itemCount: 5,
+                                  itemSize: 40,
+                                  unratedColor: Colors.grey[700],
+                                  itemBuilder: (context, _) => const Icon(
+                                    Icons.star_rounded,
+                                    color: Colors.amber,
+                                  ),
+                                  onRatingUpdate: (rating) {
+                                    setState(() {
+                                      _rating = rating;
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: _feedbackController,
+                                maxLines: 3,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: 'Share your experience...',
+                                  hintStyle: TextStyle(color: Colors.grey[400]),
+                                  fillColor: Colors.grey[800],
+                                  filled: true,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(
+                                        color: Colors.amber, width: 2),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.amber,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  onPressed: _submitFeedback,
+                                  child: const Text(
+                                    'Submit Review',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        const SizedBox(height: 2),
+                        _buildFeedbackList(),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -730,6 +776,129 @@ class _DetailspageState extends State<Detailspage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFeedbackList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _getFeedbackStream(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Error: ${snapshot.error}',
+                style: const TextStyle(color: Colors.white70)),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.amber),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Text(
+              'No reviews yet',
+              style: TextStyle(color: Colors.grey[400]),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 5),
+              child: Text(
+                'Customer Reviews',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 17, 17, 17),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final feedback =
+                      snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                  final timestamp = feedback['timestamp'] as Timestamp?;
+                  final formattedDate = timestamp != null
+                      ? '${timestamp.toDate().day}/${timestamp.toDate().month}/${timestamp.toDate().year}'
+                      : 'Date not available';
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[850],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              feedback['userEmail'] ?? 'Anonymous',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              formattedDate,
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            RatingBarIndicator(
+                              rating: (feedback['rating'] ?? 0).toDouble(),
+                              itemBuilder: (context, _) => const Icon(
+                                Icons.star_rounded,
+                                color: Colors.amber,
+                              ),
+                              itemCount: 5,
+                              itemSize: 20,
+                              unratedColor: Colors.grey[700],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              (feedback['rating'] ?? 0).toString(),
+                              style: const TextStyle(
+                                color: Colors.amber,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          feedback['comment'] ?? '',
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

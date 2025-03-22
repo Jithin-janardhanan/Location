@@ -308,12 +308,21 @@ class ChatListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Chats'),
-        backgroundColor: Colors.black,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue.shade400, Colors.purple.shade500],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         titleTextStyle: const TextStyle(
-          color: Colors.amber,
+          color: Colors.white,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
+        elevation: 0, // Optional: Removes AppBar shadow for a cleaner look
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance

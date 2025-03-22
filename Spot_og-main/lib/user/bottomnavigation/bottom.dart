@@ -1,67 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:spot/user/map.dart';
 import 'package:spot/user/screens/user_Profile.dart';
 import 'package:spot/user/screens/user_chat.dart';
-
-// class BottomNavigation extends StatefulWidget {
-//   const BottomNavigation({super.key});
-
-//   @override
-//   State<BottomNavigation> createState() => _BottomNavigationState();
-// }
-
-// class _BottomNavigationState extends State<BottomNavigation> {
-//   int indexNum = 0;
-//   List tabWidgets = [MapScreen(), UserShop(), UserProfile(), ChatListScreen()];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       bottomNavigationBar: BottomNavigationBar(
-//         backgroundColor: Colors.grey[900],
-//         unselectedItemColor: Colors.grey[400],
-//         selectedItemColor: Colors.cyanAccent,
-//         elevation: 10,
-//         items: const [
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.map),
-//             label: "Map",
-//             backgroundColor: Color(0xFF282828),
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.store),
-//             label: "Shop",
-//             backgroundColor: Color(0xFF2F2F2F),
-//           ),
-//           // BottomNavigationBarItem(
-//           //   icon: Icon(Icons.search),
-//           //   label: "Search",
-//           //   backgroundColor: Color(0xFF2F2F2F),
-//           // ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.person),
-//             label: "Profile",
-//             backgroundColor: Color(0xFF2F2F2F),
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.chat),
-//             label: 'Chats',
-//           ),
-//         ],
-//         selectedFontSize: 14,
-//         currentIndex: indexNum,
-//         onTap: (int index) {
-//           setState(() {
-//             indexNum = index;
-//           });
-//         },
-//       ),
-//       body: Center(child: tabWidgets.elementAt(indexNum)),
-//     );
-//   }
-// }
-import 'package:flutter/material.dart';
 import 'package:spot/user/screens/user_shoplist.dart';
+import 'package:spot/user/screens/widgets/mapshop.dart';
+
 
 class BottomNavigation extends StatefulWidget {
   const BottomNavigation({super.key});
@@ -73,7 +15,12 @@ class BottomNavigation extends StatefulWidget {
 class _BottomNavigationState extends State<BottomNavigation>
     with TickerProviderStateMixin {
   int indexNum = 0;
-  List tabWidgets = [MapScreen(), UserShop(), UserProfile(), ChatListScreen()];
+  List tabWidgets = [
+    MapScreenlist(),
+    UserShop(),
+    UserProfile(),
+    ChatListScreen()
+  ];
   late List<AnimationController> _controllers;
 
   @override
@@ -118,7 +65,7 @@ class _BottomNavigationState extends State<BottomNavigation>
           ),
           child: BottomNavigationBar(
             backgroundColor:
-                const Color.fromARGB(255, 235, 229, 229)?.withOpacity(0.95),
+                const Color.fromARGB(255, 235, 229, 229).withOpacity(0.95),
             unselectedItemColor: const Color.fromARGB(255, 80, 78, 78),
             selectedItemColor: const Color.fromARGB(255, 143, 45, 10),
             elevation: 0,
@@ -193,6 +140,7 @@ class _BottomNavigationState extends State<BottomNavigation>
       Icons.store_rounded,
       Icons.person_rounded,
       Icons.chat_rounded,
+      Icons.location_searching
     ];
 
     return Stack(
@@ -209,13 +157,13 @@ class _BottomNavigationState extends State<BottomNavigation>
                 shape: BoxShape.circle,
               ),
               child: const Text(
-                '2',
+                '4',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 8,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
+              ), 
             ),
           ),
       ],

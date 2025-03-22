@@ -18,8 +18,10 @@ class _RegistrationState extends State<Registration> {
   final _name = TextEditingController();
   final _number = TextEditingController();
   final _email = TextEditingController();
+  final _address = TextEditingController(); // New address controller
   final _formkey = GlobalKey<FormState>();
   File? _image;
+  bool _isLoading = false;
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
@@ -65,128 +67,234 @@ class _RegistrationState extends State<Registration> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Spot',
-          style: TextStyle(color: Colors.amberAccent),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.black,
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Form(
-            key: _formkey,
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.grey.shade300,
-                      backgroundImage:
-                          _image != null ? FileImage(_image!) : null,
-                      child: _image == null
-                          ? Icon(Icons.person,
-                              size: 50, color: Colors.grey.shade600)
-                          : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextFormField(
-                      controller: _name,
-                      decoration: InputDecoration(
-                        hintText: 'name',
-                        prefixIcon: Icon(Icons.person),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextFormField(
-                      controller: _number,
-                      decoration: InputDecoration(
-                        hintText: 'Number',
-                        prefixIcon: Icon(Icons.phone),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextFormField(
-                      controller: _email,
-                      decoration: InputDecoration(
-                        hintText: 'email',
-                        prefixIcon: Icon(Icons.mail),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                      onPressed: () async {
-                        // Validate form before proceeding
-                        if (_formkey.currentState!.validate()) {
-                          final user = FirebaseAuth.instance.currentUser;
-                          if (user == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text(
-                                    "Please log in to save your profile")));
-                            return;
-                          }
-
-                          // Upload image to Cloudinary
-                          String? imageUrl = await _uploadToCloudinary();
-
-                          if (imageUrl == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text("Failed to upload image")));
-                            return;
-                          }
-
-                          // Save profile data to Firestore
-                          try {
-                            await FirebaseFirestore.instance
-                                .collection('user_reg')
-                                .doc(user.uid)
-                                .set({
-                              'name': _name.text,
-                              'phone': _number.text,
-                              'email': _email.text,
-                              'image': imageUrl,
-                              'userId': user.uid,
-                              'role': 'user',
-                              'status': 'active', // Default status is active
-                            });
-
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text("Profile saved successfully!")));
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => BottomNavigation()));
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text("Failed to save profile: $e")));
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color.fromARGB(255, 58, 125, 207),
-                      ),
-                      child: const Text('Register')),
-                ]),
+          'Registration',
+          style: TextStyle(
+            color: Colors.amber,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.blue.shade400,
+                Colors.purple.shade500,
+              ],
+            ),
+          ),
+        ),
+        elevation: 2,
+      ),
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.white, Colors.white],
+              ),
+            ),
+          ),
+          SingleChildScrollView(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formkey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 60,
+                              backgroundColor: Colors.grey.shade300,
+                              backgroundImage:
+                                  _image != null ? FileImage(_image!) : null,
+                              child: _image == null
+                                  ? Icon(Icons.person,
+                                      size: 60, color: Colors.grey.shade600)
+                                  : null,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.camera_alt,
+                                    color: Colors.white, size: 20),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      buildTextField(_name, 'Name', Icons.person),
+                      const SizedBox(height: 20),
+                      buildTextField(_number, 'Phone Number', Icons.phone),
+                      const SizedBox(height: 20),
+                      buildTextField(_email, 'Email', Icons.mail),
+                      const SizedBox(height: 20),
+                      buildTextField(_address, 'Address', Icons.location_on),
+                      const SizedBox(height: 30),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () async {
+                                  setState(() => _isLoading = true);
+                                  if (_formkey.currentState!.validate()) {
+                                    final user =
+                                        FirebaseAuth.instance.currentUser;
+                                    if (user == null) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                "Please log in to save your profile")),
+                                      );
+                                      setState(() => _isLoading = false);
+                                      return;
+                                    }
+
+                                    String? imageUrl =
+                                        await _uploadToCloudinary();
+
+                                    if (imageUrl == null) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content:
+                                                Text("Failed to upload image")),
+                                      );
+                                      setState(() => _isLoading = false);
+                                      return;
+                                    }
+
+                                    try {
+                                      await FirebaseFirestore.instance
+                                          .collection('user_reg')
+                                          .doc(user.uid)
+                                          .set({
+                                        'name': _name.text,
+                                        'phone': _number.text,
+                                        'email': _email.text,
+                                        'address': _address.text,
+                                        'image': imageUrl,
+                                        'userId': user.uid,
+                                        'role': 'user',
+                                        'status': 'active',
+                                      });
+
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                "Profile saved successfully!")),
+                                      );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                BottomNavigation()),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                "Failed to save profile: $e")),
+                                      );
+                                    }
+                                  }
+                                  setState(() => _isLoading = false);
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
+                              : const Text(
+                                  'Register',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildTextField(
+      TextEditingController controller, String hint, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey[400]),
+          prefixIcon: Icon(icon, color: Colors.amber),
+          filled: true,
+          fillColor: Colors.grey[850],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.amber, width: 2),
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'This field is required';
+          }
+          return null;
+        },
       ),
     );
   }

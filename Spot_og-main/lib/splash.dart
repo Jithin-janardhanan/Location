@@ -1,46 +1,4 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
-// import 'package:spot/user/authentication/login.dart';
 
-// class SplashScreen extends StatefulWidget {
-//   const SplashScreen({super.key});
-
-//   @override
-//   State<SplashScreen> createState() => _SplashScreenState();
-// }
-
-// class _SplashScreenState extends State<SplashScreen>
-//     with SingleTickerProviderStateMixin {
-//   @override
-//   void initState() {
-//     super.initState();
-//     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-//     Future.delayed(const Duration(seconds: 3), () {
-//       Navigator.pushReplacement(
-//           context, MaterialPageRoute(builder: (context) => LoginPage()));
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-//         overlays: SystemUiOverlay.values);
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//         body: SizedBox(
-//       width: double.infinity,
-//       height: double.infinity,
-//       child: Image.asset(
-//         'assets/splass.jpeg',
-//         fit: BoxFit.cover,
-//       ),
-//     ));
-//   }
-// }
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -116,20 +74,28 @@ class _SplashScreenState extends State<SplashScreen> {
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(20),
+                    width: 150,
+                    height: 150,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withOpacity(0.9),
                     ),
-                    child: Image.asset(
-                      'assets/SPOTbg.png',
-                      width: 150,
-                      height: 150,
-                      fit: BoxFit.contain,
+                    child: ClipOval(
+                      child: Container(
+                        padding: const EdgeInsets.all(
+                            15), // Add padding inside the circle
+                        child: Image.asset(
+                          'assets/Adobe Express - file.png',
+                          fit: BoxFit
+                              .cover, // Changed to cover to fill the circular space
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 3),
                 // App name with fade-in animation
                 TweenAnimationBuilder(
                   tween: Tween<double>(begin: 0, end: 1),

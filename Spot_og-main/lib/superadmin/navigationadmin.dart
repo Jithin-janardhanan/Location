@@ -15,10 +15,10 @@ class _BottomNavigationadminState extends State<BottomNavigationadmin> {
   int indexNum = 0;
 
   final List<Widget> tabWidgets = [
+    ShopAnalyticsBarChart(),
     AdminUserManagement(),
     Adminvendor(),
-    CharityMemberList(),
-    ShopAnalyticsBarChart()
+    CharityMemberList()
   ];
 
   @override
@@ -68,27 +68,27 @@ class _BottomNavigationadminState extends State<BottomNavigationadmin> {
                 },
                 destinations: [
                   _buildNavDestination(
+                    icon: Icons.analytics_outlined,
+                    selectedIcon: Icons.analytics_rounded,
+                    label: 'Analytics',
+                    index: 0,
+                  ),
+                  _buildNavDestination(
                     icon: Icons.people_alt_outlined,
                     selectedIcon: Icons.people_alt_rounded,
                     label: 'Users',
-                    index: 0,
+                    index: 1,
                   ),
                   _buildNavDestination(
                     icon: Icons.store_outlined,
                     selectedIcon: Icons.store_rounded,
                     label: 'Vendors',
-                    index: 1,
+                    index: 2,
                   ),
                   _buildNavDestination(
                     icon: Icons.volunteer_activism_outlined,
                     selectedIcon: Icons.volunteer_activism_rounded,
                     label: 'Charity',
-                    index: 2,
-                  ),
-                  _buildNavDestination(
-                    icon: Icons.analytics_outlined,
-                    selectedIcon: Icons.analytics_rounded,
-                    label: 'Analytics',
                     index: 3,
                   ),
                 ],

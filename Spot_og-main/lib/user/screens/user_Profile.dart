@@ -137,7 +137,18 @@ class _UserProfileState extends State<UserProfile> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.black,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.blue.shade400,
+                Colors.purple.shade500, // You can adjust these colors
+              ],
+            ),
+          ),
+        ),
         elevation: 0,
         actions: [
           AnimatedSwitcher(
@@ -155,7 +166,7 @@ class _UserProfileState extends State<UserProfile> {
                     },
                   )
                 : IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
+                    icon: const Icon(Icons.edit, color: Colors.white),
                     onPressed: () => setState(() => _isEditing = true),
                   ),
           ),

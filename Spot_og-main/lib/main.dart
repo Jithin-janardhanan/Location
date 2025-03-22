@@ -31,8 +31,7 @@ void main() async {
 class Login extends StatelessWidget {
   const Login({super.key});
 
-  @override
-  Widget build(BuildContext context) {
+  @override  Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Spot',

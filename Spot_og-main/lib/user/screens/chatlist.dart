@@ -162,9 +162,24 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: Text(
           widget.vendorData['name'] as String? ?? 'Chat',
-          style: const TextStyle(color: Colors.amber),
+          style: const TextStyle(
+            color: Colors.amber,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        backgroundColor: Colors.black,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.blue.shade400, Colors.purple.shade500
+                // Medium gray
+              ],
+            ),
+          ),
+        ),
+        elevation: 2,
       ),
       body: Column(
         children: [
